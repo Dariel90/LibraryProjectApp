@@ -50,6 +50,7 @@ namespace LibraryAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            AddSwagger(services);
 
             services.AddCors(opt => {
                 opt.AddPolicy("CorsPolicy", policy => {
@@ -59,9 +60,27 @@ namespace LibraryAPI
                 });
             });
             services.AddTransient<ILibraryRepository, LibraryRepository>();//Importando repositorio para CRUD del negocio principal
-            services.AddSwaggerGen(c =>
+            ;
+        }
+
+        private void AddSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "LibraryAPI", Version = "v1" });
+                var groupName = "v1";
+
+                options.SwaggerDoc(groupName, new OpenApiInfo
+                {
+                    Title = $"LibraryAPI {groupName}",
+                    Version = groupName,
+                    Description = "Library API for the library management",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Dariel's Company",
+                        Email = string.Empty,
+                        Url = new Uri("https://foo.com/"),
+                    }
+                });
             });
         }
 

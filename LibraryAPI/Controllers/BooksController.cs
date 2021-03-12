@@ -14,18 +14,18 @@ namespace LibraryAPI.Controllers
     {
         private readonly ILogger<BooksController> _logger;
 
-        private readonly ILibraryRepository _libraryService;
+        private readonly ILibraryRepository _libraryRepository;
 
-        public BooksController(ILogger<BooksController> logger, ILibraryRepository libraryService)
+        public BooksController(ILogger<BooksController> logger, ILibraryRepository libraryRepository)
         {
             _logger = logger;
-            _libraryService = libraryService;
+            _libraryRepository = libraryRepository;
         }
 
         [HttpGet("GetBooks")]
         public async Task<IActionResult> Get()
         {
-            var books = await _libraryService.GetBooksAsync();
+            var books = await _libraryRepository.GetBooks();
             return Ok(books);
         }
     }
