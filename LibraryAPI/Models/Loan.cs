@@ -12,7 +12,6 @@ namespace LibraryAPI.Models
         public virtual Book Book { get; set; }
         public int ReaderId { get; set; }
         public virtual Reader Reader { get; set; }
-
         public DateTime LoanDate { get; set; }
     }
 }

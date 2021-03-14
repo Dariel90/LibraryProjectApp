@@ -39,28 +39,28 @@ namespace LibraryAPI.DataContext.Data
                     new Book
                     {
                         Name = "El viejo y el mar",
-                        ISBN = $"0-8760-4565-4",
+                        Isbn = $"0-8760-4565-4",
                         IsBorrowed = false,
                     },
 
                     new Book
                     {
                         Name = "Viaje al Centro de la Tierra",
-                        ISBN = $"0-4443-8223-2",
+                        Isbn = $"0-4443-8223-2",
                         IsBorrowed = true,
                     },
 
                     new Book
                     {
                         Name = "Canción de hielo y fuego",
-                        ISBN = $"0-4694-7756-3",
+                        Isbn = $"0-4694-7756-3",
                         IsBorrowed = false
                     },
 
                     new Book
                     {
                         Name = "The Hobbit",
-                        ISBN = $"0-9788-7440-4",
+                        Isbn = $"0-9788-7440-4",
                         IsBorrowed = true,
                     }
                 );

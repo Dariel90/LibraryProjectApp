@@ -20,5 +20,23 @@ namespace LibraryAPI.DataContext
         {
             base.OnConfiguring(optionsBuilder);
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Loan>()
+                .HasKey(t => new { t.Id });
+
+            modelBuilder.Entity<Loan>()
+                .HasOne(pt => pt.Book)
+                .WithMany(p => p.Loans)
+                .HasForeignKey(pt => pt.BookId)
+                .IsRequired();
+
+            modelBuilder.Entity<Loan>()
+                .HasOne(pt => pt.Reader)
+                .WithMany(t => t.Loans)
+                .HasForeignKey(pt => pt.ReaderId)
+                .IsRequired();
+        }
     }
 }

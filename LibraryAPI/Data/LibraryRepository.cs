@@ -28,6 +28,18 @@ namespace LibraryAPI.Data
             return await _context.Books.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public async Task<Loan> GetLoan(int id)
+        {
+            return await _context.Loans.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async void SetBookInLoan(int id)
+        {
+            var book = await GetBook(id);
+            if (book.Id != id) return;
+            book.IsBorrowed = true;
+        }
+
         public async Task<List<Book>> GetBooks()
         {
             var books = new List<Book>();
@@ -44,9 +56,27 @@ namespace LibraryAPI.Data
             return books;
         }
 
-        public Task<List<Book>> GetBorrowedBooksToAUser(int id)
+        public async Task<List<Book>> GetBorrowedBooksToAUser(int id)
         {
-            throw new NotImplementedException();
+            var books = new List<Book>();
+            try
+            {
+                var query = _context.Loans.Include(lb => lb.Reader).Include(lr => lr.Book).Where(lr => lr.ReaderId == id);
+                books = await query.Select(b => new Book
+                {
+                    Id = b.Book.Id,
+                    Name = b.Book.Name,
+                    Isbn = b.Book.Isbn,
+                    IsBorrowed = b.Book.IsBorrowed
+                }).ToListAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return books;
         }
 
         public async Task<List<Loan>> GetLoans()
@@ -75,9 +105,15 @@ namespace LibraryAPI.Data
             throw new NotImplementedException();
         }
 
-        public Task<bool> IsABorrowedBook(int id)
+        public async Task<bool> IsABorrowedBook(int id)
         {
-            throw new NotImplementedException();
+            var result = false;
+            var book = await GetBook(id);
+            if (book.Id == id)
+            {
+                result = book.IsBorrowed;
+            }
+            return result;
         }
 
         public async Task<bool> SaveAll()

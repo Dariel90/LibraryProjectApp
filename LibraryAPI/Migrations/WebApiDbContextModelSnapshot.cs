@@ -26,11 +26,11 @@ namespace LibraryAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ISBN")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsBorrowed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Isbn")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -83,13 +83,13 @@ namespace LibraryAPI.Migrations
             modelBuilder.Entity("LibraryAPI.Models.Loan", b =>
                 {
                     b.HasOne("LibraryAPI.Models.Book", "Book")
-                        .WithMany()
+                        .WithMany("Loans")
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("LibraryAPI.Models.Reader", "Reader")
-                        .WithMany()
+                        .WithMany("Loans")
                         .HasForeignKey("ReaderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

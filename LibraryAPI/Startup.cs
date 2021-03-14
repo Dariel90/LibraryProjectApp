@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -14,6 +16,10 @@ using Microsoft.OpenApi.Models;
 using LibraryAPI.DataContext;
 using Microsoft.EntityFrameworkCore;
 using LibraryAPI.Data;
+using LibraryAPI.Helpers;
+using LibraryAPI.Middleware;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
 namespace LibraryAPI
 {
@@ -49,7 +55,10 @@ namespace LibraryAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddNewtonsoftJson(opt => {
+                    opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                });
             AddSwagger(services);
 
             services.AddCors(opt => {
@@ -59,8 +68,9 @@ namespace LibraryAPI
                         .WithOrigins(new[] {"http://localhost:36180", "http://localhost:5000" } );
                 });
             });
+            services.AddAutoMapper(typeof(LibraryRepository).Assembly);
             services.AddTransient<ILibraryRepository, LibraryRepository>();//Importando repositorio para CRUD del negocio principal
-            ;
+            
         }
 
         private void AddSwagger(IServiceCollection services)
@@ -77,7 +87,7 @@ namespace LibraryAPI
                     Contact = new OpenApiContact
                     {
                         Name = "Dariel's Company",
-                        Email = string.Empty,
+                        Email = "dariel901231@gmail.com",
                         Url = new Uri("https://foo.com/"),
                     }
                 });
@@ -87,11 +97,28 @@ namespace LibraryAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LibraryAPI v1"));
+            }
+            else
+            {
+                app.UseExceptionHandler(builder =>
+                {
+                    builder.Run(async context =>
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        var error = context.Features.Get<IExceptionHandlerFeature>();
+                        if (error != null)
+                        {
+                            context.Response.AddApplicationError(error.Error.Message);
+                            await context.Response.WriteAsync(error.Error.Message);
+                        }
+                    });
+                });
             }
 
             app.UseHttpsRedirection();
@@ -99,6 +126,7 @@ namespace LibraryAPI
             app.UseRouting();
 
             app.UseAuthorization();
+            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {

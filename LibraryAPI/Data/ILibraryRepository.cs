@@ -19,6 +19,8 @@ namespace LibraryAPI.Data
         Task<bool> SaveAll();
         Task<Reader> GetReader(int id);
         Task<Book> GetBook(int id);
+        Task<Loan> GetLoan(int id);
+        void SetBookInLoan(int id);
 
     }
 
