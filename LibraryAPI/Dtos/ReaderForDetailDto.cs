@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace LibraryAPI.Dtos
 {
-    public class LoanForCreationDto
+    public class ReaderForDetailDto
     {
-        public int ReaderId { get; set; }
-        public int BookId { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }

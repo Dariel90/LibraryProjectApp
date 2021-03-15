@@ -17,9 +17,14 @@ namespace LibraryAPI.Helpers
             CreateMap<LoanForCreationDto, Loan>().ReverseMap();
             CreateMap<BookForRegisterDto, Book>();
             CreateMap<Book, BookForDetailDto>();
-                //.ForMember(dest => dest.IsBorrowed, opt =>
-                //    opt.MapFrom(src => src.Loans.Where(p => p.BookId == src.Id)));
             CreateMap<BookForUpdateDto, Book>();
+            CreateMap<Loan, LoanToReturnDto>()
+                .ForMember(dto => dto.BookName,opt => opt
+                    .MapFrom(x => x.Book.Name))
+                .ForMember(dto => dto.ReaderName, opt => opt
+                    .MapFrom(x => x.Reader.Name));
+            CreateMap<Reader, ReaderForDetailDto>().ReverseMap();
+            CreateMap<ReaderForDetailDto, Reader>();
 
 
         }

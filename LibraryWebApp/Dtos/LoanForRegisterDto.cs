@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LibraryAPI.Dtos
+namespace LibraryWebApp.Dtos
 {
-    public class LoanForCreationDto
+    public class LoanForRegisterDto
     {
         public int ReaderId { get; set; }
-        public int BookId { get; set; }
+        public int BookId { get; set; } 
     }
 }

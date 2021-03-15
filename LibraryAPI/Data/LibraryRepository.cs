@@ -56,6 +56,22 @@ namespace LibraryAPI.Data
             return books;
         }
 
+        public async Task<List<Reader>> GetReaders()
+        {
+            var readers = new List<Reader>();
+
+            try
+            {
+                readers = await _context.Readers.ToListAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            return readers;
+        }
+
         public async Task<List<Book>> GetBorrowedBooksToAUser(int id)
         {
             var books = new List<Book>();
@@ -100,9 +116,9 @@ namespace LibraryAPI.Data
             return await _context.Readers.FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public Task<bool> IsABookBorrowedToAUser(int bookId, int userId)
-        {
-            throw new NotImplementedException();
+        public async Task<bool> IsABookBorrowedToAUser(int bookId, int readerId) {
+            
+            return await _context.Loans.FirstOrDefaultAsync(l => l.BookId == bookId && l.ReaderId == readerId) != null;
         }
 
         public async Task<bool> IsABorrowedBook(int id)

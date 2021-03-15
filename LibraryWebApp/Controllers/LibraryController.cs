@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Json;
 using LibraryWebApp.Dtos;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace LibraryWebApp.Controllers
 {
@@ -23,14 +24,7 @@ namespace LibraryWebApp.Controllers
 
         private LibraryApiHelper _apiHelper;
 
-        public LibraryController(ILogger<LibraryController> logger, IConfiguration configuration)
-        {
-            _logger = logger;
-            _configuration = configuration;
-            _apiHelper = new LibraryApiHelper(configuration);
-        }
-
-        public async Task<IActionResult> Index()
+        private async Task<List<BookData>> GetBooks()
         {
             var books = new List<BookData>();
             var client = _apiHelper.Initial();
@@ -40,6 +34,32 @@ namespace LibraryWebApp.Controllers
                 var results = res.Content.ReadAsStringAsync().Result;
                 books = JsonConvert.DeserializeObject<List<BookData>>(results);
             }
+            return books;
+        }
+
+        private async Task<List<ReaderData>> GetReaders()
+        {
+            var readers = new List<ReaderData>();
+            var client = _apiHelper.Initial();
+            var res = await client.GetAsync("api/reader/GetReaders");
+            if (res.IsSuccessStatusCode)
+            {
+                var results = res.Content.ReadAsStringAsync().Result;
+                readers = JsonConvert.DeserializeObject<List<ReaderData>>(results);
+            }
+            return readers;
+        }
+
+        public LibraryController(ILogger<LibraryController> logger, IConfiguration configuration)
+        {
+            _logger = logger;
+            _configuration = configuration;
+            _apiHelper = new LibraryApiHelper(configuration);
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var books = await GetBooks();
             return View(books);
         }
 
@@ -64,7 +84,7 @@ namespace LibraryWebApp.Controllers
             postTask.Wait();
             var result = postTask.Result;
             if (result.IsSuccessStatusCode) return RedirectToAction("Index");
-            ModelState.AddModelError(string.Empty, "Server Error. Please contact administrator.");
+            ModelState.AddModelError(string.Empty, "Please fill the ISBN number.");
             return View();
         }
 
@@ -73,7 +93,7 @@ namespace LibraryWebApp.Controllers
         {
             var client = _apiHelper.Initial();
             var result = await client.PutAsJsonAsync<BookData>($"api/books/{book.Id}", book);
-            if (result.IsSuccessStatusCode) Redirect("~/Index");
+            if (result.IsSuccessStatusCode) return RedirectToAction("Index"); ;
             return View("Edit");
         }
 
@@ -102,15 +122,51 @@ namespace LibraryWebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public ActionResult CreateLoan(int id)
+        {
+            var readers = GetReaders().Result;
+            var listItems = new List<SelectListItem>();
+            foreach (var reader in readers)
+            {
+                listItems.Add(new SelectListItem(reader.Name, reader.Id.ToString()));
+            }
+
+            ViewData["LoanData"] = new LoanData {ReaderId = id, ReaderListItems = listItems};
+            return View(new LoanData { ReaderId = id,ReaderListItems = listItems});
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateLoan(LoanForRegisterDto loan)
+        {
+            var client = _apiHelper.Initial();
+            var sbookId = (string)this.ControllerContext.RouteData.Values["id"];
+            var bookId = Convert.ToInt32(sbookId);
+            loan.BookId = bookId;
+            var postTask = client.PostAsJsonAsync<LoanForRegisterDto>($"api/book/{loan.BookId}/Loan", loan);
+            postTask.Wait();
+            var response = postTask.Result;
+            if (response.IsSuccessStatusCode) return RedirectToAction("Index");
+            else
+            {
+                var httpErrorObject = await response.Content.ReadAsStringAsync();
+                ModelState.AddModelError(string.Empty, httpErrorObject);
+            }
+
+            var readers = GetReaders().Result;
+            var listItems = new List<SelectListItem>();
+            foreach (var reader in readers)
+            {
+                listItems.Add(new SelectListItem(reader.Name, reader.Id.ToString()));
+            }
+            return View(new LoanData { ReaderId = loan.ReaderId, ReaderListItems = listItems });
         }
     }
 }

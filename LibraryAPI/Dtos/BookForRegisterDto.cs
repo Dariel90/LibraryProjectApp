@@ -12,7 +12,6 @@ namespace LibraryAPI.Dtos
         public string Name { get; set; }
 
         [Required]
-        [StringLength(8, ErrorMessage = "You must specify the ISBN number")]
         public string Isbn{ get; set; }
 
         public bool IsBorrowed { get; set; }

@@ -13,5 +13,10 @@ namespace LibraryAPI.Models
         public int ReaderId { get; set; }
         public virtual Reader Reader { get; set; }
         public DateTime LoanDate { get; set; }
+
+        public Loan()
+        {
+            LoanDate = DateTime.Now;
+        }
     }
 }

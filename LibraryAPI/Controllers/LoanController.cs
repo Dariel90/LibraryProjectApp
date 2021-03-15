@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ using LibraryAPI.Models;
 namespace LibraryAPI.Controllers
 {
     [ApiController]
-    [Route("api/reader/{readerId}/[controller]")]
+    [Route("api/book/{bookId}/[controller]")]
     public class LoanController : ControllerBase
     {
         private readonly ILogger<LoanController> _logger;
@@ -31,10 +32,10 @@ namespace LibraryAPI.Controllers
         }
 
         [HttpGet("{id}", Name = "GetLoan")]
-        public async Task<IActionResult> GetLoan(int readerId, int id)
+        public async Task<IActionResult> GetLoan(int bookId, int id)
         {
-            var sender = await _libraryRepository.GetReader(readerId);
-            if (sender.Id != readerId) return Unauthorized();
+            var sender = await _libraryRepository.GetBook(bookId);
+            if (sender.Id != bookId) return Unauthorized();
 
             var messageFromRepo = await _libraryRepository.GetLoan(id);
 
@@ -58,12 +59,12 @@ namespace LibraryAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateLoan(int readerId, LoanForCreationDto loanForCreationDto)
+        public async Task<IActionResult> CreateLoan(int bookId, LoanForCreationDto loanForCreationDto)
         {
-            var reader = await _libraryRepository.GetReader(readerId);
-            if (reader == null) return NotFound("The reader was not found");
+            var book = await _libraryRepository.GetBook(bookId);
+            if (book == null) return NotFound("The reader was not found");
 
-            loanForCreationDto.ReaderId = readerId;
+            loanForCreationDto.BookId = bookId;
 
             var loan = _mapper.Map<Loan>(loanForCreationDto);
 
@@ -71,19 +72,23 @@ namespace LibraryAPI.Controllers
 
             if (!isBookBorrowed)
             {
-                _libraryRepository.Add(loan);
-
-                var book = await _libraryRepository.GetBook(loanForCreationDto.BookId);
                 book.IsBorrowed = true;
+                _libraryRepository.Add(loan);
 
                 if (await _libraryRepository.SaveAll())
                 {
-                    var loanToReturn = _mapper.Map<LoanForCreationDto>(loan);
-                    return CreatedAtRoute("GetLoan", new { readerId, id = loan.Id }, loanToReturn);
+                    var loanToReturn = _mapper.Map<LoanToReturnDto>(loan);
+                    return CreatedAtRoute("GetLoan", new { bookId, id = loan.Id }, loanToReturn);
                 }
             }
+            else
+            {
+                string message = string.Format($"Sorry, the book named {book.Name} is already on loan");
+                return BadRequest(message);
+                //throw new Exception(message);
+            }
 
-            return BadRequest("Creating the loan failed on save") ;
+            return BadRequest("Creating the loan failed on save");
         }
     }
 }
