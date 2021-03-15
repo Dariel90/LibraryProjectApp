@@ -36,8 +36,9 @@ namespace LibraryAPI.Data
         public async void SetBookInLoan(int id)
         {
             var book = await GetBook(id);
-            if (book.Id != id) return;
+            if (book != null && book.Id != id) return;
             book.IsBorrowed = true;
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<Book>> GetBooks()
@@ -87,8 +88,7 @@ namespace LibraryAPI.Data
                 }).ToListAsync();
             }
             catch (Exception e)
-            {
-                Console.WriteLine(e);
+            {                   
                 throw;
             }
 

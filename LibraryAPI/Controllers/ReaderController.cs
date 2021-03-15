@@ -75,7 +75,7 @@ namespace LibraryAPI.Controllers
             _libraryRepository.Delete(bookFromRepo);
             if (await _libraryRepository.SaveAll())
                 return NoContent();
-            throw new System.Exception($"The process for add a book {id} has fail");
+            throw new System.Exception($"The process for add a reader {id} has fail");
         }
     }
 }
