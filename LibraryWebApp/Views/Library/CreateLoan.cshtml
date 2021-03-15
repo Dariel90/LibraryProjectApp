@@ -1,0 +1,31 @@
+﻿@model LibraryWebApp.Models.LoanData
+
+@{
+    ViewData["Title"] = "CreateLoan";
+}
+
+<h1>Make a loan</h1>
+
+<h4>Loan Data</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateLoan">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                @Html.DropDownListFor(model => Model.ReaderId, Model.ReaderListItems, "-- Select Reader --")
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,6 +1,6 @@
 using System;
 
-namespace LibraryProjectApp.Models
+namespace LibraryWebApp.Models
 {
     public class ErrorViewModel
     {
